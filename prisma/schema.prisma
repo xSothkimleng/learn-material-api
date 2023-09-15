@@ -9,3 +9,64 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// datasource db {
+//   provider = "postgresql"
+//   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+//   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+// }
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  Approved
+  Unapprove
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @default(USER)
+  email     String   @unique
+  hash      String
+  userName  String?
+  post      Post[]
+}
+
+model University {
+  id              Int     @id @default(autoincrement())
+  university_name String
+  Major           Major[]
+}
+
+model Major {
+  id         Int        @id @default(autoincrement())
+  major_name String
+  university University @relation(fields: [uniId], references: [id])
+  uniId      Int
+  Course     Course[]
+}
+
+model Course {
+  id            Int    @id @default(autoincrement())
+  majorId       Int
+  major         Major  @relation(fields: [majorId], references: [id])
+  course_name   String
+  course_number String
+  Post          Post[]
+}
+
+model Post {
+  id       Int    @id @default(autoincrement())
+  courseId Int
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
+  subject  String
+  file     String
+  status   Status @default(Unapprove)
+}
